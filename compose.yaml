@@ -1,0 +1,16 @@
+services: #define the name of the service we want to run
+  postgres: #name of our service
+    image: 'postgres:15' #to download the postgres version 15 image from docker hub
+    container_name: inventory_db #name of the container that will be created when we run the service
+    environment: #environment variables to set up the postgres database
+      - POSTGRES_DB=inventory_mgmt #name of the database
+      - POSTGRES_PASSWORD=${DB_PASSWORD} #password for the postgres user, we will set this in the .env file
+      - POSTGRES_USER=${DB_USER} #username for the postgres user, we will set this in the .env file
+    ports:
+      - '5432:5432' #Maps (Computer Port):(Docker Port). This opens the 'door' to the DB.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Saves data on your hard drive so it's not lost on restart
+      #postgres_data: This is the name we gave to our "vault."
+      #:/var/lib/postgresql/data: This is the specific folder inside the Linux system of the Docker container where PostgreSQL saves its files.
+volumes:
+  postgres_data: #This is the Declaration.
