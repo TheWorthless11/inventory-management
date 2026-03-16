@@ -2,8 +2,10 @@ package com.example.inventorymanagement.service;
 
 import com.example.inventorymanagement.entity.Category;
 import com.example.inventorymanagement.entity.Product;
+import com.example.inventorymanagement.entity.Users;
 import com.example.inventorymanagement.repository.CategoryRepository;
 import com.example.inventorymanagement.repository.ProductRepository;
+import com.example.inventorymanagement.repository.StockLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +16,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+
+    private final StockLogService stockLogService;
+    private final UserService userService;
+
     @Autowired
-    public ProductService(ProductRepository productRepository,CategoryRepository categoryRepository){
+    public ProductService(ProductRepository productRepository,CategoryRepository categoryRepository,StockLogService stockLogService,UserService userService) {
         this.productRepository=productRepository;
         this.categoryRepository=categoryRepository;
+        this.stockLogService=stockLogService;
+        this.userService=userService;
 
     }
 
@@ -56,17 +64,32 @@ public class ProductService {
     }
 
     // 4. UPDATE STOCK QUANTITY (When someone buys or restocks an item)
-    public Product updateStock(Long productId, int newQuantity){
+    public Product updateStock(Long productId, int newQuantity,String username){
         Product existingProduct = productRepository.findById(productId).orElseThrow(()->new RuntimeException("Product not found!"));
 
         if (newQuantity<0){
             throw new IllegalArgumentException("Cannot update stock to a negative number.");
         }
 
+        // --- THE STOCK LOGIC ---
+        // 1. Figure out how much the stock is changing by
+        int oldQuantity = existingProduct.getStockQuantity();
+        int quantityDifference = newQuantity - oldQuantity;
+
+        // 2. Determine the transaction type (If we added stock = RESTOCK, if we lost stock = SALE)
+        String transactionType = (quantityDifference>0) ? "RESTOCK" : "SALE";
+
+        // 3. Save the new quantity to the database
         existingProduct.setStockQuantity(newQuantity);
         Product savedProduct = productRepository.save(existingProduct);
 
-        // TODO: Call  teammate's StockLogService right here to record who changed the stock!
+        // 4. Fetch the User who made the change
+        Users loggedInUser = userService.getUserByUsername(username);
+
+        // 5.
+        // We use Math.abs() so the log always shows a positive number (e.g., "Sold 5" instead of "Sold -5")
+        stockLogService.recordLog(savedProduct,loggedInUser,Math.abs(quantityDifference),transactionType);
+
 
         return savedProduct;
     }
