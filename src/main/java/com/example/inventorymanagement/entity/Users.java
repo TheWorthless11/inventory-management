@@ -1,4 +1,5 @@
 package com.example.inventorymanagement.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Users {
     private String role; // e.g., "ADMIN", "SELLER", "BUYER"
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore // Stops the loop here!
     private List<StockLog> stockLogs;
 
 }
