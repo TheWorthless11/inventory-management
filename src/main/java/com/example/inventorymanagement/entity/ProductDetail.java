@@ -23,6 +23,8 @@ public class ProductDetail {
     private String dimensions;
     @Column(nullable = false)
     private String weight;
+    @Column(nullable = true)  // Optional field
+    private String description;  // Add this field
 
     @OneToOne(mappedBy = "productDetail")
     private Product product;
