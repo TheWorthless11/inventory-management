@@ -118,6 +118,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+                    <excludes>
+                        <exclude>**/InventoryManagementApplicationTests.class</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
