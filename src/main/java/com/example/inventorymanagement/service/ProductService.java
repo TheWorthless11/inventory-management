@@ -3,6 +3,7 @@ package com.example.inventorymanagement.service;
 import com.example.inventorymanagement.entity.Category;
 import com.example.inventorymanagement.entity.Product;
 import com.example.inventorymanagement.entity.Users;
+import com.example.inventorymanagement.exception.ResourceNotFoundException;
 import com.example.inventorymanagement.repository.CategoryRepository;
 import com.example.inventorymanagement.repository.ProductRepository;
 import com.example.inventorymanagement.repository.StockLogRepository;
@@ -47,8 +48,9 @@ public class ProductService {
         }
 
         // Rule C: The Category MUST exist in the database
+        // REPLACED RuntimeException with ResourceNotFoundException
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(()->new RuntimeException("Cannot add product: Category ID " + categoryId + "does not exist!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot add product: Category ID " + categoryId + " does not exist!"));
 // Attach the real category to the product
         product.setCategory(category);
 
@@ -58,14 +60,14 @@ public class ProductService {
 // 3. DELETE A PRODUCT
     public void deleteProduct(Long productId){
         if(!productRepository.existsById(productId)){
-            throw new RuntimeException("Cannot delete: Product ID " + productId + " not found!");
+            throw new ResourceNotFoundException("Cannot delete: Product ID " + productId + " not found!");
         }
         productRepository.deleteById(productId);
     }
 
     // 4. UPDATE STOCK QUANTITY (When someone buys or restocks an item)
     public Product updateStock(Long productId, int newQuantity,String username){
-        Product existingProduct = productRepository.findById(productId).orElseThrow(()->new RuntimeException("Product not found!"));
+        Product existingProduct = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found!"));
 
         if (newQuantity<0){
             throw new IllegalArgumentException("Cannot update stock to a negative number.");
