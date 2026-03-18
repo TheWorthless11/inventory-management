@@ -1,5 +1,6 @@
 package com.example.inventorymanagement.controller;
 
+import com.example.inventorymanagement.dto.ProductDTO;
 import com.example.inventorymanagement.entity.Product;
 import com.example.inventorymanagement.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,14 +22,35 @@ public class ProductController {
         this.productService = productService;
     }
 
+
+    // ==========================================
+    // HELPER METHOD: The "Filter"
+    // ==========================================
+    private ProductDTO convertToDTO(Product product) {
+        return new ProductDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getStockQuantity(),
+                product.getCategory().getName() // We extract just the category string here!
+        );
+    }
+
     // =========================================
     // GET: Fetch all products
     // URL: http://localhost:8080/api/products
     // Method: GET
     // =========================================
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<Product> rawProducts = productService.getAllProducts();
+
+        List<ProductDTO> safeProducts = rawProducts.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(safeProducts);
     }
 
     // =========================================
@@ -42,11 +65,12 @@ public class ProductController {
     //}
     // =========================================
     @PostMapping
-    public ResponseEntity<Product> createProduct(
+    public ResponseEntity<ProductDTO> createProduct(
             @RequestBody Product product,
             @RequestParam Long categoryId) {
+
         Product savedProduct = productService.createProduct(product, categoryId);
-        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+        return new ResponseEntity<>(convertToDTO(savedProduct), HttpStatus.CREATED);
     }
 
     // =========================================
@@ -55,13 +79,13 @@ public class ProductController {
     // Method: PUT
     // =========================================
     @PutMapping("/{id}/stock")
-    public ResponseEntity<Product> updateStock(
+    public ResponseEntity<ProductDTO> updateStock(
             @PathVariable Long id,
             @RequestParam int newQuantity,
             @RequestParam String username) {
 
         Product updatedProduct = productService.updateStock(id, newQuantity, username);
-        return ResponseEntity.ok(updatedProduct);
+        return ResponseEntity.ok(convertToDTO(updatedProduct));
     }
 
     // =========================================
@@ -72,6 +96,6 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.noContent().build(); // Returns a 204 No Content status
+        return ResponseEntity.noContent().build();
     }
 }

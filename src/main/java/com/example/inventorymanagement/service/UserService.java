@@ -2,6 +2,7 @@ package com.example.inventorymanagement.service;
 
 
 import com.example.inventorymanagement.entity.Users;
+import com.example.inventorymanagement.exception.ResourceNotFoundException;
 import com.example.inventorymanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +44,7 @@ public class UserService {
     // 2. FIND USER BY USERNAME (Used later for Login)
     public Users getUserByUsername(String username){
         return userRepository.findByUsername(username).orElseThrow(
-                ()->new RuntimeException("Username not found!")
+                ()->new ResourceNotFoundException("User with username '" + username + "' not found!")
         );
     }
 
