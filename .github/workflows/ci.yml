@@ -1,0 +1,54 @@
+name: CI
+
+# Run this workflow whenever code is pushed or a PR is opened/updated.
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+
+jobs:
+  test:
+    # Use Ubuntu because Maven + Java setup is quick and stable here.
+    runs-on: ubuntu-latest
+
+    # Start a PostgreSQL container for integration/context tests that need DB access.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: inventory_mgmt
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test_user -d inventory_mgmt"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # These env vars are used by application.yaml (${DB_USER}, ${DB_PASSWORD}).
+    env:
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+
+    steps:
+      # Download repository code.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Java and cache Maven dependencies for faster CI runs.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Ensure Maven wrapper script can run on Linux.
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      # Build and run all tests.
+      - name: Run tests
+        run: ./mvnw -B clean test
