@@ -1,5 +1,6 @@
 package com.example.inventorymanagement.controller;
 
+import com.example.inventorymanagement.dto.SupplierDTO; // 📦 IMPORT DTO
 import com.example.inventorymanagement.entity.Supplier;
 import com.example.inventorymanagement.service.SupplierService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/suppliers")
@@ -20,25 +22,33 @@ public class SupplierController {
         this.supplierService = supplierService;
     }
 
-    // =========================================
-    // GET: Fetch all suppliers
-    // URL: http://localhost:8080/api/suppliers
-    // Method: GET
-    // =========================================
-    @GetMapping
-    public List<Supplier> getAllSuppliers() {
-        return supplierService.getAllSuppliers();
+    // ==========================================
+    // 🪄 HELPER METHOD: The "Filter"
+    // ==========================================
+    private SupplierDTO convertToDTO(Supplier supplier) {
+        return new SupplierDTO(supplier.getId(), supplier.getSupplierName());
     }
 
-    // =========================================
+    // ==========================================
+    // GET: Fetch all suppliers
+    // ==========================================
+    @GetMapping
+    public ResponseEntity<List<SupplierDTO>> getAllSuppliers() {
+        List<Supplier> rawSuppliers = supplierService.getAllSuppliers();
+
+        List<SupplierDTO> safeSuppliers = rawSuppliers.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(safeSuppliers);
+    }
+
+    // ==========================================
     // POST: Add a new supplier
-    // URL: http://localhost:8080/api/suppliers
-    // Method: POST
-    // =========================================
+    // ==========================================
     @PostMapping
-    public ResponseEntity<Supplier> addSupplier(@RequestBody Supplier supplier) {
-        // Matches your addSupplier method in SupplierService!
+    public ResponseEntity<SupplierDTO> addSupplier(@RequestBody Supplier supplier) {
         Supplier savedSupplier = supplierService.addSupplier(supplier);
-        return new ResponseEntity<>(savedSupplier, HttpStatus.CREATED);
+        return new ResponseEntity<>(convertToDTO(savedSupplier), HttpStatus.CREATED);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.inventorymanagement.controller;
 
+import com.example.inventorymanagement.dto.ProductDetailDTO; // 📦 IMPORT DTO
 import com.example.inventorymanagement.entity.ProductDetail;
 import com.example.inventorymanagement.service.ProductDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,27 +19,29 @@ public class ProductDetailController {
         this.productDetailService = productDetailService;
     }
 
-    // =========================================
-    // GET: Fetch product details by ID
-    // URL: http://localhost:8080/api/product-details/1
-    // Method: GET
-    // =========================================
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductDetail> getDetailById(@PathVariable Long id) {
-        // Matches your getDetailById method in ProductDetailService!
-        ProductDetail detail = productDetailService.getDetailById(id);
-        return ResponseEntity.ok(detail);
+    // ==========================================
+    // 🪄 HELPER METHOD: The "Filter"
+    // ==========================================
+    private ProductDetailDTO convertToDTO(ProductDetail detail) {
+        // If your ProductDetail has more fields, add them here!
+        return new ProductDetailDTO(detail.getId(), detail.getDescription());
     }
 
-    // =========================================
+    // ==========================================
+    // GET: Fetch product details by ID
+    // ==========================================
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDetailDTO> getDetailById(@PathVariable Long id) {
+        ProductDetail rawDetail = productDetailService.getDetailById(id);
+        return ResponseEntity.ok(convertToDTO(rawDetail));
+    }
+
+    // ==========================================
     // POST: Save new product details
-    // URL: http://localhost:8080/api/product-details
-    // Method: POST
-    // =========================================
+    // ==========================================
     @PostMapping
-    public ResponseEntity<ProductDetail> saveDetails(@RequestBody ProductDetail detail) {
-        // Matches your saveDetails method in ProductDetailService!
+    public ResponseEntity<ProductDetailDTO> saveDetails(@RequestBody ProductDetail detail) {
         ProductDetail savedDetail = productDetailService.saveDetails(detail);
-        return new ResponseEntity<>(savedDetail, HttpStatus.CREATED);
+        return new ResponseEntity<>(convertToDTO(savedDetail), HttpStatus.CREATED);
     }
 }
