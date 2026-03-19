@@ -1,40 +1,36 @@
 package com.example.inventorymanagement.controller;
 
-import com.example.inventorymanagement.entity.Supplier;
-import com.example.inventorymanagement.service.SupplierService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
+import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@SpringBootTest(
-        properties = {
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
-        }
-)
-@AutoConfigureMockMvc(addFilters = false)
+import com.example.inventorymanagement.entity.Supplier;
+import com.example.inventorymanagement.service.SupplierService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 class SupplierControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private SupplierService supplierService;
+    private FakeSupplierService supplierService;
+
+    @BeforeEach
+    void setUp() {
+        supplierService = new FakeSupplierService();
+        mockMvc = MockMvcBuilders.standaloneSetup(new SupplierController(supplierService)).build();
+        objectMapper = new ObjectMapper();
+    }
 
     @Test
     void getAllSuppliers_returnsList() throws Exception {
@@ -43,7 +39,7 @@ class SupplierControllerTest {
         supplier.setSupplierName("Global Traders");
         supplier.setContactPhone("+880123456");
 
-        Mockito.when(supplierService.getAllSuppliers()).thenReturn(List.of(supplier));
+        supplierService.allSuppliers = List.of(supplier);
 
         mockMvc.perform(get("/api/suppliers"))
                 .andExpect(status().isOk())
@@ -61,12 +57,31 @@ class SupplierControllerTest {
         saved.setSupplierName("ABC Supply");
         saved.setContactPhone("+8809999");
 
-        Mockito.when(supplierService.addSupplier(Mockito.any(Supplier.class))).thenReturn(saved);
+        supplierService.savedSupplier = saved;
 
         mockMvc.perform(post("/api/suppliers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(11));
+    }
+
+    private static class FakeSupplierService extends SupplierService {
+        private List<Supplier> allSuppliers = new ArrayList<>();
+        private Supplier savedSupplier;
+
+        FakeSupplierService() {
+            super(null);
+        }
+
+        @Override
+        public List<Supplier> getAllSuppliers() {
+            return allSuppliers;
+        }
+
+        @Override
+        public Supplier addSupplier(Supplier supplier) {
+            return savedSupplier != null ? savedSupplier : supplier;
+        }
     }
 }
