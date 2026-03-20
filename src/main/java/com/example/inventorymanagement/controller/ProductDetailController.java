@@ -1,6 +1,6 @@
 package com.example.inventorymanagement.controller;
 
-import com.example.inventorymanagement.dto.ProductDetailDTO; // 📦 IMPORT DTO
+import com.example.inventorymanagement.dto.ProductDetailDTO; // IMPORT DTO
 import com.example.inventorymanagement.entity.ProductDetail;
 import com.example.inventorymanagement.service.ProductDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class ProductDetailController {
     }
 
     // ==========================================
-    // 🪄 HELPER METHOD: The "Filter"
+    //  HELPER METHOD: The "Filter"
     // ==========================================
     private ProductDetailDTO convertToDTO(ProductDetail detail) {
         // If your ProductDetail has more fields, add them here!
