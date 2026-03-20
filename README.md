@@ -12,8 +12,9 @@ This project is built for the **Software Engineering Lab** requirement and focus
 - **API Style**: REST + DTO-based responses
 - **Frontend**: Thymeleaf templates with a minimal multi-page UI
 - **Testing**: JUnit 5, Mockito, Spring Boot Test, MockMvc
-- **Containerization**: PostgreSQL via Docker Compose (application image Dockerfile is pending)
+- **Containerization**: PostgreSQL via Docker Compose
 - **CI**: GitHub Actions (`.github/workflows/ci.yml`) runs Maven tests on pushes and PRs
+- **CD**: GitHub Actions (`.github/workflows/cd.yml`) triggers Render deploy on `main`
 
 ## Requirement Coverage (Current Status)
 
@@ -25,10 +26,10 @@ Status legend: `Done`, `Partial`, `Pending`
 | REST API Design (>=3 controllers, CRUD for >=2 entities) | Partial | 6 controllers implemented. Full CRUD exists for Product. Others currently mostly GET/POST in controllers (some extra service methods exist but not exposed). |
 | PostgreSQL + >=4 tables + relationships | Done | 6 entities with `1:N`, `N:1`, `1:1`, and `N:N` relationships. |
 | Testing (>=15 unit + >=3 integration) | Done | 22 service-layer unit tests and 12 controller MockMvc tests passing locally/CI. |
-| Dockerization (`Dockerfile` + compose app+db) | Partial | `compose.yaml` exists for PostgreSQL only. App `Dockerfile` and app service in compose are pending. |
+| Dockerization (`Dockerfile` + compose app+db) | Partial | `compose.yaml` exists for PostgreSQL. Full app+db compose flow can be finalized based on target branch setup. |
 | GitHub workflow strategy (`main/develop/feature`, protected main, PR review) | Pending | Process/policy configuration must be set in repository settings. |
-| CI/CD (build + test + deploy from main) | Partial | CI for build/tests exists. Auto-deploy to Render is pending. |
-| Deployment on Render + public URL | Pending | Not configured yet in repo. |
+| CI/CD (build + test + deploy from main) | Partial | CI test workflow is present; CD workflow for Render deploy hook is added. |
+| Deployment on Render + public URL | Partial | Deploy hook workflow exists, but final live URL/setup still required. |
 | Documentation (README with architecture, ERD, API, run steps, CI/CD) | Done (this file) | This README documents current implementation and pending items. |
 
 ## Architecture
@@ -252,12 +253,25 @@ What it does:
 4. Sets up JDK 21
 5. Runs `./mvnw -B clean test`
 
+## CD Pipeline (Render)
+
+GitHub Actions workflow: `.github/workflows/cd.yml`
+
+What it does:
+
+1. Triggers on push to `main`
+2. Reads deploy hook from GitHub Secret `RENDER_DEPLOY_HOOK_URL`
+3. Sends a `POST` request to trigger Render deploy
+
+If `RENDER_DEPLOY_HOOK_URL` is not configured, the workflow fails with a clear message.
+
 ## Dockerization Status
 
 Implemented:
 
 - `compose.yaml` for PostgreSQL service
 - Environment variable based DB credentials
+- CD deploy workflow (`.github/workflows/cd.yml`)
 
 Pending for full requirement compliance:
 
@@ -271,11 +285,10 @@ docker compose up --build
 
 ## Render Deployment Status
 
-Pending:
+Partial:
 
-- Render service setup
-- Automated deploy job from `main` branch in GitHub Actions
-- Public live URL
+- Deploy workflow exists via Render deploy hook
+- Remaining: Render service final setup and public live URL
 
 ## Git Workflow (Recommended for Requirement)
 
@@ -286,8 +299,8 @@ Pending:
 
 ## Known Gaps to Close Before Final Submission
 
-1. Add app `Dockerfile` and full compose app+db setup.
-2. Add Render deployment workflow from `main`.
+1. Add app `Dockerfile` and full compose app+db setup (if missing in target branch).
+2. Configure `RENDER_DEPLOY_HOOK_URL` in repository secrets.
 3. Enforce branch protection and PR review policy in GitHub settings.
 4. Add/verify login/logout flow documentation and screenshots for demo.
 5. Add architecture and ER diagrams as image files in `docs/` if your instructor prefers images over Mermaid.
@@ -301,5 +314,3 @@ Pending:
 - Docker and deployment status
 
 ---
-
-
