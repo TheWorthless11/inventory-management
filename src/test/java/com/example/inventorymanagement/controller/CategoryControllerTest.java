@@ -18,11 +18,14 @@ import java.util.List;
 // These imports are the magic "Asserts" that check the robot's results
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.security.test.context.support.WithMockUser;
+
 @WebMvcTest(CategoryController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 public class CategoryControllerTest {
 
     @Autowired
@@ -38,6 +41,7 @@ public class CategoryControllerTest {
     // TEST 1: Can our API return a list of categories?
     // ==========================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testGetAllCategories_ShouldReturnList() throws Exception {
         // 1. SETUP: Train the fake service
         Category cat1 = new Category();
@@ -64,6 +68,7 @@ public class CategoryControllerTest {
     // TEST 2: Can our API create a new category?
     // ==========================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testCreateCategory_ShouldReturnCreated() throws Exception {
         // 1. SETUP: Create the category we want to send
         Category newCategory = new Category();
@@ -78,6 +83,7 @@ public class CategoryControllerTest {
 
         // 2. ACT & ASSERT: Let the robot do its job!
         mockMvc.perform(post("/api/categories") // Send a POST request
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON) // Tell the server we are sending JSON
                         .content(objectMapper.writeValueAsString(newCategory))) // Convert our Java 'newCategory' into actual JSON text
                 .andExpect(status().isCreated()) // Expect a 201 CREATED status
@@ -86,6 +92,7 @@ public class CategoryControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testCreateCategory_WithInvalidPayload_ShouldReturnBadRequest() throws Exception {
         Category invalidCategory = new Category();
 
@@ -93,6 +100,7 @@ public class CategoryControllerTest {
                 .thenThrow(new IllegalArgumentException("Category name cannot be empty!"));
 
         mockMvc.perform(post("/api/categories")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidCategory)))
                 .andExpect(status().isBadRequest())

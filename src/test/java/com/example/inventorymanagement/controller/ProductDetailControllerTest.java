@@ -10,17 +10,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductDetailController.class)
 // Loads only MVC components for ProductDetailController
 
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 // Enables MockMvc and disables security filters
 class ProductDetailControllerTest {
 
@@ -45,6 +47,7 @@ class ProductDetailControllerTest {
     // 3. Response JSON contains correct fields and values
     // =========================================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     void getDetailById_returnsDetail() throws Exception {
 
         ProductDetail detail = new ProductDetail();
@@ -74,6 +77,7 @@ class ProductDetailControllerTest {
     // 4. Response contains generated ID
     // =========================================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     void saveDetails_returnsCreated() throws Exception {
 
         // Request payload
@@ -96,6 +100,7 @@ class ProductDetailControllerTest {
 
         // Perform POST request and validate response
         mockMvc.perform(post("/api/product-details")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())

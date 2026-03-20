@@ -17,13 +17,16 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.springframework.security.test.context.support.WithMockUser;
 
 @WebMvcTest(ProductController.class)
 // Loads only MVC components for ProductController
 
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 // Configures MockMvc for HTTP request simulation
 // Disables security filters so authentication does not block requests
 class ProductControllerTest {
@@ -49,6 +52,7 @@ class ProductControllerTest {
     // 3. JSON response contains expected fields and values
     // =========================================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     void getAllProducts_returnsDtoList() throws Exception {
 
         Category category = new Category();
@@ -82,6 +86,7 @@ class ProductControllerTest {
     // 4. JSON response contains expected values
     // =========================================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     void createProduct_returnsCreatedDto() throws Exception {
 
         Category category = new Category();
@@ -109,6 +114,7 @@ class ProductControllerTest {
 
         // Perform POST request and validate response
         mockMvc.perform(post("/api/products?categoryId=3")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
