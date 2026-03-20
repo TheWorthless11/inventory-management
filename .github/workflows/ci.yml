@@ -3,8 +3,9 @@ name: CI
 # Run this workflow whenever code is pushed or a PR is opened/updated.
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "main", "develop" ]
   pull_request:
+    branches: [ "main", "develop" ]
 
 jobs:
   test:
@@ -14,7 +15,7 @@ jobs:
     # Start a PostgreSQL container for integration/context tests that need DB access.
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15
         env:
           POSTGRES_DB: inventory_mgmt
           POSTGRES_USER: test_user
@@ -25,12 +26,13 @@ jobs:
           --health-cmd "pg_isready -U test_user -d inventory_mgmt"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
-    # These env vars are used by application.yaml (${DB_USER}, ${DB_PASSWORD}).
+    # These env vars match src/main/resources/application.yaml placeholders.
     env:
-      DB_USER: test_user
-      DB_PASSWORD: test_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/inventory_mgmt
+      SPRING_DATASOURCE_USERNAME: test_user
+      SPRING_DATASOURCE_PASSWORD: test_password
 
     steps:
       # Download repository code.
