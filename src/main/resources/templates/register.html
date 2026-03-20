@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register User</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav a { margin-right: 12px; text-decoration: none; }
+        form { max-width: 420px; margin-top: 18px; }
+        label { display: block; margin-top: 10px; }
+        input, select, button { width: 100%; padding: 8px; margin-top: 4px; }
+        .msg { margin-top: 12px; }
+        .ok { color: #0a7a0a; }
+        .err { color: #b10000; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+
+<h1>Register User</h1>
+
+<p class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></p>
+<p class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<form th:action="@{/ui/register}" th:object="${userForm}" method="post">
+    <label for="username">Username</label>
+    <input id="username" type="text" th:field="*{username}" required>
+
+    <label for="password">Password</label>
+    <input id="password" type="password" th:field="*{password}" required>
+
+    <label for="role">Role</label>
+    <select id="role" th:field="*{role}" required>
+        <option value="">Select role</option>
+        <option th:each="role : ${roles}" th:value="${role}" th:text="${role}"></option>
+    </select>
+
+    <button type="submit">Create User</button>
+</form>
+</body>
+</html>
+
