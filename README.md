@@ -1,8 +1,8 @@
 # Inventory Management System (Spring Boot)
 
-A full-stack-ready backend for inventory operations with role-based access, PostgreSQL persistence, REST APIs, testing, and CI.
+An inventory management application with a Spring Boot REST backend and a simple Thymeleaf frontend for quick browser-based usage.
 
-This project is built for the **Software Engineering Lab** requirement and currently focuses on backend quality: layered architecture, validation, exception handling, security, and automated tests.
+This project is built for the **Software Engineering Lab** requirement and focuses on clean backend architecture plus a beginner-friendly Thymeleaf UI layer.
 
 ## Project Overview
 
@@ -10,6 +10,7 @@ This project is built for the **Software Engineering Lab** requirement and curre
 - **Backend**: Spring Boot 3.2.5, Java 21, Spring Data JPA, Spring Security, Validation
 - **Database**: PostgreSQL
 - **API Style**: REST + DTO-based responses
+- **Frontend**: Thymeleaf templates with a minimal multi-page UI
 - **Testing**: JUnit 5, Mockito, Spring Boot Test, MockMvc
 - **Containerization**: PostgreSQL via Docker Compose (application image Dockerfile is pending)
 - **CI**: GitHub Actions (`.github/workflows/ci.yml`) runs Maven tests on pushes and PRs
@@ -48,6 +49,7 @@ src/main/java/com/example/inventorymanagement
 |  |- SecurityConfig.java
 |- controller/
 |  |- CategoryController.java
+| |  |- PageController.java
 |  |- ProductController.java
 |  |- ProductDetailController.java
 |  |- StockLogController.java
@@ -87,15 +89,44 @@ Entities implemented:
 - Public:
   - `POST /api/users/register`
   - `/api/products/**`
+  - `GET /ui/**`
+  - `POST /ui/register`
 - Admin only:
   - `/api/users/**`
 - Admin or Seller:
   - `/api/categories/**`
   - `/api/suppliers/**`
   - `/api/product-details/**`
-  - `/api/stock-logs/**`
+  - `/api/logs/**`
 
 Password encryption is handled using `BCryptPasswordEncoder` in `UserService.registerUser`.
+
+## Thymeleaf Frontend (Simple UI)
+
+The project includes a basic server-rendered UI using Thymeleaf and `@Controller` endpoints.
+
+### Page Controller
+
+- `PageController` serves UI routes under `/ui`
+- It fetches data through existing services, so REST APIs are not modified
+
+### UI Routes
+
+- `GET /ui/dashboard` - summary counts (products/categories/suppliers)
+- `GET /ui/products` - product list
+- `GET /ui/categories` - category list
+- `GET /ui/suppliers` - supplier list
+- `GET /ui/register` - user registration form
+- `POST /ui/register` - submit registration form
+
+### Template Files
+
+- `src/main/resources/templates/dashboard.html`
+- `src/main/resources/templates/products.html`
+- `src/main/resources/templates/categories.html`
+- `src/main/resources/templates/suppliers.html`
+- `src/main/resources/templates/register.html`
+- `src/main/resources/templates/fragments/navbar.html` (shared navbar fragment)
 
 ## REST API Endpoints
 
@@ -202,6 +233,12 @@ PowerShell:
 ```
 
 The app reads DB settings from `src/main/resources/application.yaml`.
+
+Open the simple UI in your browser after starting the app:
+
+```text
+http://localhost:8081/ui/dashboard
+```
 
 ## CI Pipeline
 
