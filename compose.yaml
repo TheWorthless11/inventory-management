@@ -1,3 +1,4 @@
+version: '3.8'
 services: #define the name of the service we want to run
   postgres: #name of our service
     image: 'postgres:15' #to download the postgres version 15 image from docker hub
@@ -12,5 +13,17 @@ services: #define the name of the service we want to run
       - postgres_data:/var/lib/postgresql/data # Saves data on your hard drive so it's not lost on restart
       #postgres_data: This is the name we gave to our "vault."
       #:/var/lib/postgresql/data: This is the specific folder inside the Linux system of the Docker container where PostgreSQL saves its files.
+  app:
+    build: .
+    container_name: inventory_app
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_mgmt
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 volumes:
   postgres_data: #This is the Declaration.

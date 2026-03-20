@@ -2,13 +2,14 @@ package com.example.inventorymanagement.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -22,35 +23,49 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // 1. PUBLIC: Anyone can register or see products
-                        .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
+                .csrf(AbstractHttpConfigurer::disable)
 
-                        // 2. ADMIN ONLY: User management
+                .authorizeHttpRequests(auth -> auth
+                        // PUBLIC
+                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/ui/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/ui/register").permitAll()
+
+                        // ADMIN ONLY
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
 
-                        // 3. INVENTORY MANAGEMENT: Admin and Sellers
-                        // This covers all the specific paths you mentioned!
+                        // ADMIN + SELLER
                         .requestMatchers("/api/categories/**").hasAnyRole("ADMIN", "SELLER")
                         .requestMatchers("/api/suppliers/**").hasAnyRole("ADMIN", "SELLER")
                         .requestMatchers("/api/product-details/**").hasAnyRole("ADMIN", "SELLER")
-                        .requestMatchers("/api/stock-logs/**").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers("/api/logs/**").hasAnyRole("ADMIN", "SELLER")
 
-                        // 4. CATCH-ALL: Everything else requires at least a login
+                        // EVERYTHING ELSE
                         .anyRequest().authenticated()
                 )
-                .httpBasic(withDefaults());
+
+                .httpBasic(Customizer.withDefaults()); // keep simple auth
 
         return http.build();
     }
 }
-
 /*
 {
   "username": "admin",
   "password": "admin123",
   "role": "ADMIN"
+}
+
+{
+    "username": "seller1",
+    "password": "seller123",
+    "role": "SELLER"
+}
+
+{
+    "username": "buyer1",
+    "password": "buyer123",
+    "role": "BUYER"
 }
 */
