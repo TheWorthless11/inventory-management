@@ -10,15 +10,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 class UserControllerTest {
 
     @Autowired
@@ -31,6 +33,7 @@ class UserControllerTest {
     private UserService userService;
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void registerUser_returnsCreatedDtoWithoutPassword() throws Exception {
         Users payload = new Users();
         payload.setUsername("newuser");
@@ -46,6 +49,7 @@ class UserControllerTest {
         Mockito.when(userService.registerUser(Mockito.any(Users.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/users/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
@@ -56,6 +60,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void getUserByUsername_returnsUserDto() throws Exception {
         Users found = new Users();
         found.setId(7L);

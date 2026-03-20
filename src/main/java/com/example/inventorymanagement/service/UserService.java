@@ -5,11 +5,12 @@ import com.example.inventorymanagement.entity.Users;
 import com.example.inventorymanagement.exception.ResourceNotFoundException;
 import com.example.inventorymanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserService  implements org.springframework.security.core.userdetails.UserDetailsService {
 
     private final UserRepository userRepository; // service talks with repo for sql query actions and repo talks with entity/database
     private final PasswordEncoder passwordEncoder;
@@ -46,6 +47,23 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow(
                 ()->new ResourceNotFoundException("User with username '" + username + "' not found!")
         );
+    }
+
+    // 3. THE BRIDGE METHOD: This is what Spring Security calls during Login
+    @Override
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username)
+            throws org.springframework.security.core.userdetails.UsernameNotFoundException {
+
+        // Use your existing method to find the user
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found: " + username));
+
+        // Translate YOUR 'Users' object into Spring's 'UserDetails' object
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole()) // Spring adds "ROLE_" prefix automatically
+                .build();
     }
 
 

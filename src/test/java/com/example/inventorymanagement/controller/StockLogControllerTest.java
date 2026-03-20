@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(StockLogController.class)
 // Loads only MVC components needed for StockLogController
 
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 // Enables MockMvc and disables security filters for testing
 class StockLogControllerTest {
 
@@ -44,6 +45,7 @@ class StockLogControllerTest {
     //    (productName, username, transactionType)
     // =========================================================
     @Test
+    @WithMockUser(roles = "ADMIN")
     void getAllLogs_returnsSafeDtoList() throws Exception {
 
         // Create test data for product
