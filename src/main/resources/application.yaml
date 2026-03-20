@@ -1,13 +1,14 @@
+server:
+  port: 8081
 spring:
   application:
     name: inventory-management
 
   # 1. DATABASE CONNECTION (The "Where" and "How")
   datasource:
-    url: jdbc:postgresql://localhost:5432/inventory_mgmt # URL: Points to 'localhost' because the Docker port 5432 is mapped to your computer.
-                                                         # 'inventory_mgmt' must match the POSTGRES_DB name in your compose file.
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver # Driver: The specific Java library used to communicate with PostgreSQL.
 
   # 2. JPA & HIBERNATE (The "Database Builder") the what
