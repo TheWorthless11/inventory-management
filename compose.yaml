@@ -12,5 +12,23 @@ services: #define the name of the service we want to run
       - postgres_data:/var/lib/postgresql/data # Saves data on your hard drive so it's not lost on restart
       #postgres_data: This is the name we gave to our "vault."
       #:/var/lib/postgresql/data: This is the specific folder inside the Linux system of the Docker container where PostgreSQL saves its files.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d inventory_mgmt"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  app:
+    build: .
+    container_name: inventory_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_mgmt
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 volumes:
   postgres_data: #This is the Declaration.

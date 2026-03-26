@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventory Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav a { margin-right: 12px; text-decoration: none; }
+        .cards { display: flex; gap: 12px; margin-top: 16px; }
+        .card { border: 1px solid #ddd; padding: 14px; min-width: 160px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+
+<h1>Dashboard</h1>
+<p>Quick overview of your inventory data.</p>
+
+<div class="cards">
+    <div class="card">
+        <h3>Products</h3>
+        <p th:text="${productCount}">0</p>
+    </div>
+    <div class="card">
+        <h3>Categories</h3>
+        <p th:text="${categoryCount}">0</p>
+    </div>
+    <div class="card">
+        <h3>Suppliers</h3>
+        <p th:text="${supplierCount}">0</p>
+    </div>
+</div>
+</body>
+</html>
+

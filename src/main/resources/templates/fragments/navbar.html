@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="simpleNavbar(navLinks)">
+    <nav>
+        <a th:each="entry : ${navLinks}" th:href="@{${entry.value}}" th:text="${entry.key}"></a>
+    </nav>
+</th:block>
+</body>
+</html>
+

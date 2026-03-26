@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav a { margin-right: 12px; text-decoration: none; }
+        ul { margin-top: 16px; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+
+<h1>Categories</h1>
+<ul>
+    <li th:each="category : ${categories}">
+        <span th:text="${category.id}">1</span>
+        -
+        <span th:text="${category.name}">Category Name</span>
+    </li>
+</ul>
+</body>
+</html>
+
