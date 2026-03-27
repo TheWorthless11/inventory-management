@@ -1,9 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<th:block th:fragment="simpleNavbar(navLinks)">
-    <nav>
-        <a th:each="entry : ${navLinks}" th:href="@{${entry.value}}" th:text="${entry.key}"></a>
+<th:block th:fragment="simpleNavbar">
+    <nav style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a th:href="@{/ui/dashboard}">Dashboard</a>
+        <a th:href="@{/ui/products}" sec:authorize="hasAnyRole('ADMIN','SELLER','BUYER')">Products</a>
+        <a th:href="@{/ui/categories}" sec:authorize="hasAnyRole('ADMIN','SELLER')">Categories</a>
+        <a th:href="@{/ui/suppliers}" sec:authorize="hasRole('ADMIN')">Suppliers</a>
+        <a th:href="@{/ui/logs}" sec:authorize="hasRole('ADMIN')">Stock Logs</a>
+        <a th:href="@{/ui/register}" sec:authorize="hasRole('ADMIN')">Register User</a>
+
+        <a sec:authorize="isAnonymous()" th:href="@{/login}">Login</a>
+
+        <span sec:authorize="isAuthenticated()" style="margin-left: auto; color: #444;">
+            Logged in as <strong sec:authentication="name"></strong>
+        </span>
+
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin: 0;">
+            <button type="submit">Logout</button>
+        </form>
     </nav>
 </th:block>
 </body>

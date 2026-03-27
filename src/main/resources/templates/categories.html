@@ -1,26 +1,58 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Categories</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         nav a { margin-right: 12px; text-decoration: none; }
-        ul { margin-top: 16px; }
-        li { margin-bottom: 8px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .msg { margin-top: 12px; }
+        .ok { color: #0a7a0a; }
+        .err { color: #b10000; }
+        input, button { padding: 6px; }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+<div th:replace="~{fragments/navbar :: simpleNavbar}"></div>
 
 <h1>Categories</h1>
-<ul>
-    <li th:each="category : ${categories}">
-        <span th:text="${category.id}">1</span>
-        -
-        <span th:text="${category.name}">Category Name</span>
-    </li>
-</ul>
+
+<p class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></p>
+<p class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<form sec:authorize="hasRole('ADMIN')" th:action="@{/ui/categories}" th:object="${categoryForm}" method="post">
+    <label for="name">Create Category</label>
+    <input id="name" type="text" th:field="*{name}" required minlength="2">
+    <button type="submit">Create</button>
+</form>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th sec:authorize="hasRole('ADMIN')">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="category : ${categories}">
+        <td th:text="${category.id}">1</td>
+        <td th:text="${category.name}">Category</td>
+        <td sec:authorize="hasRole('ADMIN')">
+            <form th:action="@{/ui/categories/{id}/update(id=${category.id})}" method="post" style="display: inline;">
+                <input type="text" name="name" th:value="${category.name}" required minlength="2">
+                <button type="submit">Save</button>
+            </form>
+            <form th:action="@{/ui/categories/{id}/delete(id=${category.id})}" method="post" style="display: inline;"
+                  onsubmit="return confirm('Delete this category?');">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>
 
