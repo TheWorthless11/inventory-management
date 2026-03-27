@@ -19,7 +19,6 @@ public class InventoryManagementApplication {
     }
 
     @Bean
-    @ConditionalOnBean(UserRepository.class)
     public CommandLineRunner initAdmin(UserRepository userRepository,
                                        PasswordEncoder passwordEncoder,
                                        Environment environment) {
