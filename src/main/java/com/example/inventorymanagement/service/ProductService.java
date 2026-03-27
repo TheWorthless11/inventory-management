@@ -57,6 +57,32 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product updateProduct(Long productId, Product updatedProduct, Long categoryId) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product ID " + productId + " not found!"));
+
+        if (updatedProduct.getName() == null || updatedProduct.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Product name cannot be empty!");
+        }
+        if (updatedProduct.getPrice() < 0) {
+            throw new IllegalArgumentException("prices cannot be less than zero!");
+        }
+        if (updatedProduct.getStockQuantity() < 0) {
+            throw new IllegalArgumentException("Stock quantity cannot be negative!");
+        }
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category ID " + categoryId + " does not exist!"));
+
+        existingProduct.setName(updatedProduct.getName().trim());
+        existingProduct.setDescription(updatedProduct.getDescription());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        existingProduct.setStockQuantity(updatedProduct.getStockQuantity());
+        existingProduct.setCategory(category);
+
+        return productRepository.save(existingProduct);
+    }
+
 // 3. DELETE A PRODUCT
     public void deleteProduct(Long productId){
         if(!productRepository.existsById(productId)){

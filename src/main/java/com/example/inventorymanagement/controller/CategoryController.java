@@ -6,6 +6,7 @@ import com.example.inventorymanagement.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class CategoryController {
     // URL: http://localhost:8080/api/categories
     // ==========================================
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER','BUYER')")
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
         List<Category> rawCategories = categoryService.getAllCategories();
 
@@ -50,8 +52,30 @@ public class CategoryController {
     // URL: http://localhost:8080/api/categories
     // ==========================================
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody Category category) {
         Category savedCategory = categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedCategory));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER','BUYER')")
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
+        Category category = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(convertToDTO(category));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+        Category updatedCategory = categoryService.updateCategory(id, category);
+        return ResponseEntity.ok(convertToDTO(updatedCategory));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 }

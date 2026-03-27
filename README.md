@@ -23,7 +23,7 @@ Status legend: `Done`, `Partial`, `Pending`
 | Requirement | Status | Notes |
 |---|---|---|
 | Authentication and Authorization | Partial | Registration, BCrypt encryption, role field, URL-based rules in `SecurityConfig`; login/logout UI flow not yet documented/implemented with custom endpoints. |
-| REST API Design (>=3 controllers, CRUD for >=2 entities) | Partial | 6 controllers implemented. Full CRUD exists for Product. Others currently mostly GET/POST in controllers (some extra service methods exist but not exposed). |
+| REST API Design (>=3 controllers, CRUD for >=2 entities) | Done | 6 controllers implemented. Full CRUD exists for `Product` and `Category`. |
 | PostgreSQL + >=4 tables + relationships | Done | 6 entities with `1:N`, `N:1`, `1:1`, and `N:N` relationships. |
 | Testing (>=15 unit + >=3 integration) | Done | 22 service-layer unit tests and 12 controller MockMvc tests passing locally/CI. |
 | Dockerization (`Dockerfile` + compose app+db) | Partial | `compose.yaml` exists for PostgreSQL. Full app+db compose flow can be finalized based on target branch setup. |
@@ -85,13 +85,16 @@ Entities implemented:
 
 ## Security and Role Access
 
-`SecurityConfig` currently uses URL-based authorization and HTTP Basic auth.
+`SecurityConfig` uses URL-based authorization, HTTP Basic (for API tools like Postman), and form login/logout for the browser UI.
 
 - Public:
+  - `GET /login`
+  - `GET /`
   - `POST /api/users/register`
   - `/api/products/**`
-  - `GET /ui/**`
-  - `POST /ui/register`
+  - `/ui/register`
+- Authenticated UI:
+  - `/ui/**` (after login)
 - Admin only:
   - `/api/users/**`
 - Admin or Seller:
@@ -113,12 +116,14 @@ The project includes a basic server-rendered UI using Thymeleaf and `@Controller
 
 ### UI Routes
 
+- `GET /login` - login page for `ADMIN` / `SELLER` / `BUYER`
 - `GET /ui/dashboard` - summary counts (products/categories/suppliers)
 - `GET /ui/products` - product list
 - `GET /ui/categories` - category list
 - `GET /ui/suppliers` - supplier list
 - `GET /ui/register` - user registration form
 - `POST /ui/register` - submit registration form
+- `POST /logout` - logout current user and redirect to login page
 
 ### Template Files
 
@@ -140,6 +145,9 @@ The project includes a basic server-rendered UI using Thymeleaf and `@Controller
 
 - `GET /api/categories` - list categories
 - `POST /api/categories` - create category
+- `GET /api/categories/{id}` - get category by id
+- `PUT /api/categories/{id}` - update category
+- `DELETE /api/categories/{id}` - delete category
 
 ### Products
 
@@ -181,9 +189,9 @@ Test stack:
 
 Current suite:
 
-- **Unit tests (service layer)**: 22
-- **Controller tests (MockMvc)**: 12
-- **Total**: 34 tests
+- **Unit tests (service layer)**: 28
+- **Controller tests (MockMvc)**: 18
+- **Total**: 46 tests
 
 Run tests locally:
 
@@ -238,7 +246,7 @@ The app reads DB settings from `src/main/resources/application.yaml`.
 Open the simple UI in your browser after starting the app:
 
 ```text
-http://localhost:8081/ui/dashboard
+http://localhost:8081/
 ```
 
 ## CI Pipeline

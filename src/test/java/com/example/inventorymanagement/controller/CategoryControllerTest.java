@@ -18,11 +18,14 @@ import java.util.List;
 // These imports are the magic "Asserts" that check the robot's results
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.springframework.security.test.context.support.WithMockUser;
+import com.example.inventorymanagement.exception.ResourceNotFoundException;
 
 @WebMvcTest(CategoryController.class)
 @AutoConfigureMockMvc(addFilters = true)
@@ -107,5 +110,62 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.path").value("/api/categories"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testGetCategoryById_ShouldReturnCategory() throws Exception {
+        Category category = new Category();
+        category.setId(10L);
+        category.setName("Stationery");
+
+        Mockito.when(categoryService.getCategoryById(10L)).thenReturn(category);
+
+        mockMvc.perform(get("/api/categories/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.name").value("Stationery"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testGetCategoryById_WhenMissing_ShouldReturnNotFound() throws Exception {
+        Mockito.when(categoryService.getCategoryById(99L))
+                .thenThrow(new ResourceNotFoundException("Category with ID 99 was not found in the database!"));
+
+        mockMvc.perform(get("/api/categories/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testUpdateCategory_ShouldReturnUpdatedCategory() throws Exception {
+        Category payload = new Category();
+        payload.setName("Updated");
+
+        Category updated = new Category();
+        updated.setId(12L);
+        updated.setName("Updated");
+
+        Mockito.when(categoryService.updateCategory(Mockito.eq(12L), Mockito.any(Category.class))).thenReturn(updated);
+
+        mockMvc.perform(put("/api/categories/12")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(12))
+                .andExpect(jsonPath("$.name").value("Updated"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testDeleteCategory_ShouldReturnNoContent() throws Exception {
+        mockMvc.perform(delete("/api/categories/14").with(csrf()))
+                .andExpect(status().isNoContent());
+
+        Mockito.verify(categoryService).deleteCategory(14L);
     }
 }

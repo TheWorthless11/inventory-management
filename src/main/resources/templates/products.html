@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Products</title>
@@ -7,34 +7,100 @@
         body { font-family: Arial, sans-serif; margin: 20px; }
         nav a { margin-right: 12px; text-decoration: none; }
         table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        form.inline { display: inline; }
+        .msg { margin-top: 12px; }
+        .ok { color: #0a7a0a; }
+        .err { color: #b10000; }
+        .muted { color: #666; }
+        .card { border: 1px solid #ddd; border-radius: 6px; padding: 14px; max-width: 760px; margin-top: 14px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input, select, button, textarea { padding: 6px; }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+<div th:replace="~{fragments/navbar :: simpleNavbar}"></div>
 
 <h1>Products</h1>
+
+<p class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></p>
+<p class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<div class="card" sec:authorize="hasAnyRole('ADMIN','SELLER')">
+    <h3>Create Product</h3>
+    <form th:action="@{/ui/products}" th:object="${productForm}" method="post">
+        <div class="grid">
+            <div>
+                <label>Name</label>
+                <input type="text" th:field="*{name}" required minlength="2">
+            </div>
+            <div>
+                <label>Category</label>
+                <select name="categoryId" required>
+                    <option value="">Select category</option>
+                    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
+                </select>
+            </div>
+            <div>
+                <label>Price</label>
+                <input type="number" step="0.01" min="0" th:field="*{price}" required>
+            </div>
+            <div>
+                <label>Stock</label>
+                <input type="number" min="0" th:field="*{stockQuantity}" required>
+            </div>
+        </div>
+        <label>Description</label>
+        <textarea th:field="*{description}" rows="2"></textarea>
+        <div style="margin-top: 8px;"><button type="submit">Create Product</button></div>
+    </form>
+</div>
 
 <table>
     <thead>
     <tr>
         <th>ID</th>
         <th>Name</th>
+        <th>Description</th>
         <th>Price</th>
         <th>Stock</th>
         <th>Category</th>
+        <th sec:authorize="hasAnyRole('ADMIN','SELLER')">Actions</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="product : ${products}">
         <td th:text="${product.id}">1</td>
         <td th:text="${product.name}">Sample</td>
+        <td th:text="${product.description}">-</td>
         <td th:text="${product.price}">0</td>
         <td th:text="${product.stockQuantity}">0</td>
         <td th:text="${product.category != null ? product.category.name : '-'}">-</td>
+        <td sec:authorize="hasAnyRole('ADMIN','SELLER')">
+            <form th:action="@{/ui/products/{id}/update(id=${product.id})}" method="post">
+                <input type="text" name="name" th:value="${product.name}" required minlength="2">
+                <input type="text" name="description" th:value="${product.description}" placeholder="Description">
+                <input type="number" name="price" step="0.01" min="0" th:value="${product.price}" required>
+                <input type="number" name="stockQuantity" min="0" th:value="${product.stockQuantity}" required>
+                <select name="categoryId" required>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${product.category != null and product.category.id == category.id}"></option>
+                </select>
+                <button type="submit">Save</button>
+            </form>
+
+            <form class="inline" th:action="@{/ui/products/{id}/delete(id=${product.id})}" method="post"
+                  onsubmit="return confirm('Delete this product?');">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
     </tr>
     </tbody>
 </table>
+
+<p class="muted" sec:authorize="hasRole('BUYER')">BUYER role is read-only: you can view products and categories only.</p>
 </body>
 </html>
 

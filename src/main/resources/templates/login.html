@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Inventory Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .card { max-width: 420px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
+        label { display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+        button { margin-top: 14px; padding: 9px 14px; cursor: pointer; }
+        .msg { margin-top: 12px; padding: 10px; border-radius: 6px; }
+        .err { background: #ffe7e7; border: 1px solid #f0b4b4; }
+        .ok { background: #e8f6ea; border: 1px solid #b9e0bf; }
+        .hint { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+<h1>Inventory Management Login</h1>
+<p class="hint">Use your registered account (ADMIN, SELLER, or BUYER).</p>
+
+<div class="card">
+    <form th:action="@{/login}" method="post">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <div th:if="${hasError}" class="msg err">Invalid username or password.</div>
+    <div th:if="${hasLogout}" class="msg ok">You have been logged out successfully.</div>
+</div>
+
+<p style="margin-top: 14px;" class="hint">
+    Accounts are created by an ADMIN user from the Register User page.
+</p>
+</body>
+</html>
+

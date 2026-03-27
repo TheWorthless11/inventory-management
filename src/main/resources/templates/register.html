@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Register User</title>
@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+<div th:replace="~{fragments/navbar :: simpleNavbar}"></div>
 
 <h1>Register User</h1>
 
