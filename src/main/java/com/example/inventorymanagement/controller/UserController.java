@@ -6,6 +6,7 @@ import com.example.inventorymanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,6 +35,7 @@ public class UserController {
     //    "role": "ADMIN"
     //}
     @PostMapping("/register")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> registerUser(@RequestBody Users user) {
         // 1. Save the raw user (with password) to the database
         Users savedUser = userService.registerUser(user);
@@ -50,6 +52,7 @@ public class UserController {
     // URL: http://localhost:8080/api/users/mahhia
     // ==========================================
     @GetMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> getUserByUsername(@PathVariable String username) {
         // 1. Find the raw user in the database
         Users foundUser = userService.getUserByUsername(username);

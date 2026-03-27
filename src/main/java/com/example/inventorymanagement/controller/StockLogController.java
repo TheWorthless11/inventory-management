@@ -5,6 +5,7 @@ import com.example.inventorymanagement.entity.StockLog;
 import com.example.inventorymanagement.service.StockLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +41,7 @@ public class StockLogController {
 
     // GET: View all stock history (http://localhost:8080/api/logs)
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<StockLogDTO>> getAllLogs() {
         // 1. Ask the Service for the raw logs from the database
         List<StockLog> rawLogs = stockLogService.getAllLogs();

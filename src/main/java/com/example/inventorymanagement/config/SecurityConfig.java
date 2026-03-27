@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -13,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -27,22 +29,35 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // PUBLIC
-                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/ui/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/ui/register").permitAll()
+                        .requestMatchers("/", "/error", "/login", "/css/**", "/js/**", "/images/**").permitAll()
 
-                        // ADMIN ONLY
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        // READ ACCESS RULES
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").hasAnyRole("ADMIN", "SELLER", "BUYER")
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").hasAnyRole("ADMIN", "SELLER", "BUYER")
+                        .requestMatchers(HttpMethod.GET, "/api/product-details/**").hasAnyRole("ADMIN", "SELLER", "BUYER")
+                        .requestMatchers(HttpMethod.GET, "/api/suppliers/**").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/api/logs/**").hasRole("ADMIN")
 
-                        // ADMIN + SELLER
-                        .requestMatchers("/api/categories/**").hasAnyRole("ADMIN", "SELLER")
-                        .requestMatchers("/api/suppliers/**").hasAnyRole("ADMIN", "SELLER")
-                        .requestMatchers("/api/product-details/**").hasAnyRole("ADMIN", "SELLER")
-                        .requestMatchers("/api/logs/**").hasAnyRole("ADMIN", "SELLER")
+                        // UI PAGES REQUIRE LOGIN
+                        .requestMatchers("/ui/**").authenticated()
+
+                        // ALL OTHER API CALLS REQUIRE LOGIN (fine-grained role checks via @PreAuthorize)
+                        .requestMatchers("/api/**").authenticated()
 
                         // EVERYTHING ELSE
                         .anyRequest().authenticated()
+                )
+
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/ui/dashboard", true)
+                        .permitAll()
+                )
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
                 )
 
                 .httpBasic(Customizer.withDefaults()); // keep simple auth
