@@ -50,7 +50,25 @@ public class SupplierService {
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier with ID " + id + " not found in the database!"));
     }
 
-    // 4. Delete a supplier by ID
+    // 4. Update a supplier by ID
+    public Supplier updateSupplier(Long id, Supplier updatedSupplier) {
+        if (updatedSupplier.getSupplierName() == null || updatedSupplier.getSupplierName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Supplier name cannot be empty.");
+        }
+        if (updatedSupplier.getContactPhone() == null || updatedSupplier.getContactPhone().trim().isEmpty()) {
+            throw new IllegalArgumentException("Supplier phone cannot be empty.");
+        }
+
+        Supplier existingSupplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier with ID " + id + " not found in the database!"));
+
+        existingSupplier.setSupplierName(updatedSupplier.getSupplierName().trim());
+        existingSupplier.setContactPhone(updatedSupplier.getContactPhone().trim());
+
+        return supplierRepository.save(existingSupplier);
+    }
+
+    // 5. Delete a supplier by ID
     public void deleteSupplier(Long id) {
         // Check if the supplier exists before trying to delete
         if (!supplierRepository.existsById(id)) {

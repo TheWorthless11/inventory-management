@@ -6,6 +6,7 @@ import com.example.inventorymanagement.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +44,7 @@ public class ProductController {
     // Method: GET
     // =========================================
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER','BUYER')")
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         List<Product> rawProducts = productService.getAllProducts();
 
@@ -65,6 +67,7 @@ public class ProductController {
     //}
     // =========================================
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
     public ResponseEntity<ProductDTO> createProduct(
             @RequestBody Product product,
             @RequestParam Long categoryId) {
@@ -73,12 +76,24 @@ public class ProductController {
         return new ResponseEntity<>(convertToDTO(savedProduct), HttpStatus.CREATED);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
+    public ResponseEntity<ProductDTO> updateProduct(
+            @PathVariable Long id,
+            @RequestBody Product product,
+            @RequestParam Long categoryId) {
+
+        Product updatedProduct = productService.updateProduct(id, product, categoryId);
+        return ResponseEntity.ok(convertToDTO(updatedProduct));
+    }
+
     // =========================================
     // PUT: Update stock (Triggers Stock Log)
     // URL: http://localhost:8080/api/products/2/stock?newQuantity=10&username=mahhia
     // Method: PUT
     // =========================================
     @PutMapping("/{id}/stock")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
     public ResponseEntity<ProductDTO> updateStock(
             @PathVariable Long id,
             @RequestParam int newQuantity,
@@ -94,6 +109,7 @@ public class ProductController {
     // Method: DELETE
     // =========================================
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

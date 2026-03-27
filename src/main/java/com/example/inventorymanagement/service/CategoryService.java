@@ -58,6 +58,19 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
+    // 5. Update an existing category
+    public Category updateCategory(Long id, Category updatedCategory) {
+        if (updatedCategory.getName() == null || updatedCategory.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty!");
+        }
+
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category with ID " + id + " was not found in the database!"));
+
+        existingCategory.setName(updatedCategory.getName().trim());
+        return categoryRepository.save(existingCategory);
+    }
+
 
 
 }
