@@ -2,6 +2,7 @@ package com.example.inventorymanagement.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -41,7 +42,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    // 3. Catch EVERYTHING else so the server never spits out ugly code (Returns 500)
+    // 3. Missing endpoint/static resource should stay 404 (not 500)
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorDetails> handleNoResourceFoundException(
+            NoResourceFoundException exception, WebRequest webRequest) {
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                exception.getMessage(),
+                webRequest.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    // 4. Catch EVERYTHING else so the server never spits out ugly code (Returns 500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(
             Exception exception, WebRequest webRequest) {
