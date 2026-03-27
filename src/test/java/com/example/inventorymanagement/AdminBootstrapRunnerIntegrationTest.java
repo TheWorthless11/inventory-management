@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -88,10 +89,10 @@ class AdminBootstrapRunnerIntegrationTest {
     @Configuration
     static class RunnerConfig {
         @Bean
-        CommandLineRunner testCommandLineRunner(UserRepository userRepository,
-                                                PasswordEncoder passwordEncoder,
+        CommandLineRunner testCommandLineRunner(ObjectProvider<UserRepository> userRepositoryProvider,
+                                                ObjectProvider<PasswordEncoder> passwordEncoderProvider,
                                                 Environment environment) {
-            return new InventoryManagementApplication().initAdmin(userRepository, passwordEncoder, environment);
+            return new InventoryManagementApplication().initAdmin(userRepositoryProvider, passwordEncoderProvider, environment);
         }
     }
 }

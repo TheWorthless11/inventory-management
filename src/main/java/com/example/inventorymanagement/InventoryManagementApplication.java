@@ -2,12 +2,12 @@ package com.example.inventorymanagement;
 
 import com.example.inventorymanagement.entity.Users;
 import com.example.inventorymanagement.repository.UserRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
@@ -19,10 +19,22 @@ public class InventoryManagementApplication {
     }
 
     @Bean
-    public CommandLineRunner initAdmin(UserRepository userRepository,
-                                       PasswordEncoder passwordEncoder,
+    public CommandLineRunner initAdmin(ObjectProvider<UserRepository> userRepositoryProvider,
+                                       ObjectProvider<PasswordEncoder> passwordEncoderProvider,
                                        Environment environment) {
         return args -> {
+            UserRepository userRepository = userRepositoryProvider.getIfAvailable();
+            if (userRepository == null) {
+                // In sliced tests (e.g., @WebMvcTest), repository beans are not loaded.
+                return;
+            }
+
+            PasswordEncoder passwordEncoder = passwordEncoderProvider.getIfAvailable();
+            if (passwordEncoder == null) {
+                // In some test slices, security beans are not loaded.
+                return;
+            }
+
             String adminUsernameEnv = environment.getProperty("ADMIN_USERNAME");
             String adminUsername = (adminUsernameEnv == null || adminUsernameEnv.isBlank())
                     ? "admin"
