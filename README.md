@@ -225,8 +225,8 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=change-this-in-production
 ```
 
-`ADMIN_PASSWORD` is required in production (for example, in Render environment variables).
-On first startup, the app auto-creates an ADMIN user if no ADMIN exists yet.
+`ADMIN_PASSWORD` is used for first-time admin bootstrapping. In production, if you rely on auto-creation of the initial admin user, you should set a strong `ADMIN_PASSWORD` via environment variables (for example, in Render).
+On first startup, if `ADMIN_USERNAME`/`ADMIN_PASSWORD` are set and no ADMIN exists yet, the app auto-creates an ADMIN user with those credentials. If they are not set, the app still starts but you must create an admin user manually.
 
 ### Start PostgreSQL with Docker Compose
 
