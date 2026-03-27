@@ -221,7 +221,12 @@ Create/update `.env`:
 ```dotenv
 DB_USER=admin
 DB_PASSWORD=adminpassword123
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=change-this-in-production
 ```
+
+`ADMIN_PASSWORD` is required in production (for example, in Render environment variables).
+On first startup, the app auto-creates an ADMIN user if no ADMIN exists yet.
 
 ### Start PostgreSQL with Docker Compose
 
@@ -293,10 +298,9 @@ docker compose up --build
 
 ## Render Deployment Status
 
-Partial:
+Live:
 
-- Deploy workflow exists via Render deploy hook
-- Remaining: Render service final setup and public live URL
+- Public URL: https://inventory-management-tbvp.onrender.com
 
 ## Git Workflow (Recommended for Requirement)
 
