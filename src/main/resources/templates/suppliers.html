@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Suppliers</title>
@@ -8,18 +8,35 @@
         nav a { margin-right: 12px; text-decoration: none; }
         table { border-collapse: collapse; width: 100%; margin-top: 16px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .msg { margin-top: 12px; }
+        .ok { color: #0a7a0a; }
+        .err { color: #b10000; }
+        input, button { padding: 6px; }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: simpleNavbar(${navLinks})}"></div>
+<div th:replace="~{fragments/navbar :: simpleNavbar}"></div>
 
 <h1>Suppliers</h1>
+
+<p class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></p>
+<p class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<form sec:authorize="hasRole('ADMIN')" th:action="@{/ui/suppliers}" th:object="${supplierForm}" method="post">
+    <label for="supplierName">Supplier Name</label>
+    <input id="supplierName" type="text" th:field="*{supplierName}" required minlength="2">
+    <label for="contactPhone">Phone</label>
+    <input id="contactPhone" type="text" th:field="*{contactPhone}" required minlength="5">
+    <button type="submit">Create Supplier</button>
+</form>
+
 <table>
     <thead>
     <tr>
         <th>ID</th>
         <th>Name</th>
         <th>Phone</th>
+        <th sec:authorize="hasRole('ADMIN')">Actions</th>
     </tr>
     </thead>
     <tbody>
@@ -27,6 +44,17 @@
         <td th:text="${supplier.id}">1</td>
         <td th:text="${supplier.supplierName}">Supplier</td>
         <td th:text="${supplier.contactPhone}">0123456789</td>
+        <td sec:authorize="hasRole('ADMIN')">
+            <form th:action="@{/ui/suppliers/{id}/update(id=${supplier.id})}" method="post" style="display: inline;">
+                <input type="text" name="supplierName" th:value="${supplier.supplierName}" required minlength="2">
+                <input type="text" name="contactPhone" th:value="${supplier.contactPhone}" required minlength="5">
+                <button type="submit">Save</button>
+            </form>
+            <form th:action="@{/ui/suppliers/{id}/delete(id=${supplier.id})}" method="post" style="display: inline;"
+                  onsubmit="return confirm('Delete this supplier?');">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
     </tr>
     </tbody>
 </table>

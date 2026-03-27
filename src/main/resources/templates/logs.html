@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Logs</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav a { margin-right: 12px; text-decoration: none; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: simpleNavbar}"></div>
+
+<h1>Stock Logs</h1>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Product</th>
+        <th>User</th>
+        <th>Quantity</th>
+        <th>Type</th>
+        <th>Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${logs}">
+        <td th:text="${log.id}">1</td>
+        <td th:text="${log.product != null ? log.product.name : '-'}">Product</td>
+        <td th:text="${log.user != null ? log.user.username : '-'}">User</td>
+        <td th:text="${log.quantityChanged}">0</td>
+        <td th:text="${log.transactionType}">SALE</td>
+        <td th:text="${log.timestamp}">2026-01-01T10:00:00</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
+
