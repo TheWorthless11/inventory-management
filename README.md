@@ -333,21 +333,5 @@ Live:
 - Open PR from feature -> develop, then develop -> main
 - Protect `main` and require at least one approval
 
-## Completion Notes
-
-All core project requirements are implemented in the current codebase and deployment setup.
-
-Optional polish items (not blockers):
-
-1. Add UI screenshots for report/demo material.
-2. Export Mermaid ER diagram to image files in `docs/` if your instructor requests image-based documentation.
-
-## Demo Checklist (5-minute presentation)
-
-- Project architecture and entity relationships
-- Security roles and restricted endpoints
-- API demo (register, create product, update stock, view logs)
-- Test execution in CI
-- Docker and deployment status
 
 ---
