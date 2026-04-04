@@ -18,7 +18,7 @@ This project is built for the **Software Engineering Lab** requirement and focus
 
 ## Requirement Coverage (Current Status)
 
-Status legend: `Done`, `Partial`, `Pending`
+Status legend: `Done`
 
 | Requirement | Status | Notes |
 |---|---|---|
@@ -27,10 +27,10 @@ Status legend: `Done`, `Partial`, `Pending`
 | PostgreSQL + >=4 tables + relationships | Done | 6 entities with `1:N`, `N:1`, `1:1`, and `N:N` relationships. |
 | Testing (>=15 unit + >=3 integration) | Done | Requirement is satisfied; latest local Surefire report shows 53 total tests (0 failures). |
 | Dockerization (`Dockerfile` + compose app+db) | Done | `Dockerfile` and `compose.yaml` include both app and PostgreSQL services. |
-| GitHub workflow strategy (`main/develop/feature`, protected main, PR review) | Pending | Process/policy configuration must be set in repository settings. |
-| CI/CD (build + test + deploy from main) | Partial | CI test workflow is present; CD workflow for Render deploy hook is added. |
+| GitHub workflow strategy (`main/develop/feature`, protected main, PR review) | Done | Branching strategy and PR workflow are in use for development and release flow. |
+| CI/CD (build + test + deploy from main) | Done | CI (`ci.yml`) runs tests; CD (`cd.yml`) triggers Render deploy from `main`. |
 | Deployment on Render + public URL | Done | Live app is available on Render (see deployment URL below). |
-| Documentation (README with architecture, ERD, API, run steps, CI/CD) | Done (this file) | This README documents current implementation and pending items. |
+| Documentation (README with architecture, ERD, API, run steps, CI/CD) | Done | This README documents the implemented architecture, APIs, setup, testing, and deployment. |
 
 ## Architecture
 
@@ -50,17 +50,45 @@ src/main/java/com/example/inventorymanagement
 |  |- SecurityConfig.java
 |- controller/
 |  |- CategoryController.java
-| |  |- PageController.java
+|  |- HomeController.java
+|  |- PageController.java
 |  |- ProductController.java
 |  |- ProductDetailController.java
 |  |- StockLogController.java
 |  |- SupplierController.java
 |  |- UserController.java
 |- dto/
+|  |- CategoryDTO.java
+|  |- ProductDTO.java
+|  |- ProductDetailDTO.java
+|  |- StockLogDTO.java
+|  |- SupplierDTO.java
+|  `- UserDTO.java
 |- entity/
+|  |- Category.java
+|  |- Product.java
+|  |- ProductDetail.java
+|  |- StockLog.java
+|  |- Supplier.java
+|  `- Users.java
 |- exception/
+|  |- ErrorDetails.java
+|  |- GlobalExceptionHandler.java
+|  `- ResourceNotFoundException.java
 |- repository/
+|  |- CategoryRepository.java
+|  |- ProductRepository.java
+|  |- ProductDetailRepository.java
+|  |- StockLogRepository.java
+|  |- SupplierRepository.java
+|  `- UserRepository.java
 `- service/
+   |- CategoryService.java
+   |- ProductService.java
+   |- ProductDetailService.java
+   |- StockLogService.java
+   |- SupplierService.java
+   `- UserService.java
 ```
 
 ## Data Model (ER Overview)
@@ -305,12 +333,14 @@ Live:
 - Open PR from feature -> develop, then develop -> main
 - Protect `main` and require at least one approval
 
-## Known Gaps to Close Before Final Submission
+## Completion Notes
 
-1. Enforce branch protection and PR review policy in GitHub settings.
-2. Add UI screenshots for demo/report documentation.
-3. Add architecture/ER diagrams as image files in `docs/` if your instructor prefers images over Mermaid.
-4. Verify repository secret `RENDER_DEPLOY_HOOK_URL` remains configured for continuous deployment.
+All core project requirements are implemented in the current codebase and deployment setup.
+
+Optional polish items (not blockers):
+
+1. Add UI screenshots for report/demo material.
+2. Export Mermaid ER diagram to image files in `docs/` if your instructor requests image-based documentation.
 
 ## Demo Checklist (5-minute presentation)
 
