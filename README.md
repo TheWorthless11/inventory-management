@@ -18,19 +18,19 @@ This project is built for the **Software Engineering Lab** requirement and focus
 
 ## Requirement Coverage (Current Status)
 
-Status legend: `Done`, `Partial`, `Pending`
+Status legend: `Done`
 
 | Requirement | Status | Notes |
 |---|---|---|
-| Authentication and Authorization | Partial | Registration, BCrypt encryption, role field, URL-based rules in `SecurityConfig`; login/logout UI flow not yet documented/implemented with custom endpoints. |
+| Authentication and Authorization | Done | Role-based access is enforced with `SecurityConfig` + `@PreAuthorize`; login/logout UI flow is implemented. |
 | REST API Design (>=3 controllers, CRUD for >=2 entities) | Done | 6 controllers implemented. Full CRUD exists for `Product` and `Category`. |
 | PostgreSQL + >=4 tables + relationships | Done | 6 entities with `1:N`, `N:1`, `1:1`, and `N:N` relationships. |
-| Testing (>=15 unit + >=3 integration) | Done | 22 service-layer unit tests and 12 controller MockMvc tests passing locally/CI. |
-| Dockerization (`Dockerfile` + compose app+db) | Partial | `compose.yaml` exists for PostgreSQL. Full app+db compose flow can be finalized based on target branch setup. |
-| GitHub workflow strategy (`main/develop/feature`, protected main, PR review) | Pending | Process/policy configuration must be set in repository settings. |
-| CI/CD (build + test + deploy from main) | Partial | CI test workflow is present; CD workflow for Render deploy hook is added. |
-| Deployment on Render + public URL | Partial | Deploy hook workflow exists, but final live URL/setup still required. |
-| Documentation (README with architecture, ERD, API, run steps, CI/CD) | Done (this file) | This README documents current implementation and pending items. |
+| Testing (>=15 unit + >=3 integration) | Done | Requirement is satisfied; latest local Surefire report shows 53 total tests (0 failures). |
+| Dockerization (`Dockerfile` + compose app+db) | Done | `Dockerfile` and `compose.yaml` include both app and PostgreSQL services. |
+| GitHub workflow strategy (`main/develop/feature`, protected main, PR review) | Done | Branching strategy and PR workflow are in use for development and release flow. |
+| CI/CD (build + test + deploy from main) | Done | CI (`ci.yml`) runs tests; CD (`cd.yml`) triggers Render deploy from `main`. |
+| Deployment on Render + public URL | Done | Live app is available on Render (see deployment URL below). |
+| Documentation (README with architecture, ERD, API, run steps, CI/CD) | Done | This README documents the implemented architecture, APIs, setup, testing, and deployment. |
 
 ## Architecture
 
@@ -50,17 +50,45 @@ src/main/java/com/example/inventorymanagement
 |  |- SecurityConfig.java
 |- controller/
 |  |- CategoryController.java
-| |  |- PageController.java
+|  |- HomeController.java
+|  |- PageController.java
 |  |- ProductController.java
 |  |- ProductDetailController.java
 |  |- StockLogController.java
 |  |- SupplierController.java
 |  |- UserController.java
 |- dto/
+|  |- CategoryDTO.java
+|  |- ProductDTO.java
+|  |- ProductDetailDTO.java
+|  |- StockLogDTO.java
+|  |- SupplierDTO.java
+|  `- UserDTO.java
 |- entity/
+|  |- Category.java
+|  |- Product.java
+|  |- ProductDetail.java
+|  |- StockLog.java
+|  |- Supplier.java
+|  `- Users.java
 |- exception/
+|  |- ErrorDetails.java
+|  |- GlobalExceptionHandler.java
+|  `- ResourceNotFoundException.java
 |- repository/
+|  |- CategoryRepository.java
+|  |- ProductRepository.java
+|  |- ProductDetailRepository.java
+|  |- StockLogRepository.java
+|  |- SupplierRepository.java
+|  `- UserRepository.java
 `- service/
+   |- CategoryService.java
+   |- ProductService.java
+   |- ProductDetailService.java
+   |- StockLogService.java
+   |- SupplierService.java
+   `- UserService.java
 ```
 
 ## Data Model (ER Overview)
@@ -85,23 +113,21 @@ Entities implemented:
 
 ## Security and Role Access
 
-`SecurityConfig` uses URL-based authorization, HTTP Basic (for API tools like Postman), and form login/logout for the browser UI.
+`SecurityConfig` uses URL-based authorization, method security (`@PreAuthorize`), HTTP Basic (API tools), and form login/logout (browser UI).
 
 - Public:
-  - `GET /login`
   - `GET /`
-  - `POST /api/users/register`
-  - `/api/products/**`
-  - `/ui/register`
-- Authenticated UI:
-  - `/ui/**` (after login)
-- Admin only:
-  - `/api/users/**`
-- Admin or Seller:
-  - `/api/categories/**`
-  - `/api/suppliers/**`
-  - `/api/product-details/**`
-  - `/api/logs/**`
+  - `GET /login`
+  - `GET /error`
+  - Static assets (`/css/**`, `/js/**`, `/images/**`)
+- API access:
+  - `GET /api/products/**`, `GET /api/categories/**`, `GET /api/product-details/**`: `ADMIN`/`SELLER`/`BUYER`
+  - `GET /api/suppliers/**`: `ADMIN`/`SELLER`
+  - `GET /api/logs/**`: `ADMIN`
+  - Other `/api/**`: authenticated, then method-level rules apply
+- UI access:
+  - `/ui/**`: authenticated
+  - Per-page role checks are enforced with `@PreAuthorize`
 
 Password encryption is handled using `BCryptPasswordEncoder` in `UserService.registerUser`.
 
@@ -119,10 +145,10 @@ The project includes a basic server-rendered UI using Thymeleaf and `@Controller
 - `GET /login` - login page for `ADMIN` / `SELLER` / `BUYER`
 - `GET /ui/dashboard` - summary counts (products/categories/suppliers)
 - `GET /ui/products` - product list
-- `GET /ui/categories` - category list
+- `GET /ui/categories` - category list (buyers can access by URL; navbar intentionally hides menu item for buyer)
 - `GET /ui/suppliers` - supplier list
-- `GET /ui/register` - user registration form
-- `POST /ui/register` - submit registration form
+- `GET /ui/register` - user registration form (ADMIN only)
+- `POST /ui/register` - submit registration form (ADMIN only)
 - `POST /logout` - logout current user and redirect to login page
 
 ### Template Files
@@ -138,7 +164,7 @@ The project includes a basic server-rendered UI using Thymeleaf and `@Controller
 
 ### Users
 
-- `POST /api/users/register` - register user
+- `POST /api/users/register` - register user (ADMIN only)
 - `GET /api/users/{username}` - get user by username
 
 ### Categories
@@ -187,11 +213,12 @@ Test stack:
 - `@WebMvcTest` + MockMvc for controller integration-style tests
 - Service-layer unit tests with mocked repositories/dependencies
 
-Current suite:
+Current suite (latest local Surefire report):
 
 - **Unit tests (service layer)**: 28
-- **Controller tests (MockMvc)**: 18
-- **Total**: 46 tests
+- **Controller tests (MockMvc/Web layer)**: 22
+- **Integration/other tests**: 3
+- **Total**: 53 tests
 
 Run tests locally:
 
@@ -282,15 +309,12 @@ If `RENDER_DEPLOY_HOOK_URL` is not configured, the workflow fails with a clear m
 
 Implemented:
 
-- `compose.yaml` for PostgreSQL service
-- Environment variable based DB credentials
-- CD deploy workflow (`.github/workflows/cd.yml`)
+- `Dockerfile` for Spring Boot app (multi-stage build)
+- `compose.yaml` with both `app` and `postgres`
+- Environment-variable based DB credentials
+- CI workflow (`.github/workflows/ci.yml`) and CD workflow (`.github/workflows/cd.yml`)
 
-Pending for full requirement compliance:
-
-- Add `Dockerfile` for Spring Boot app
-- Extend compose to include both `app` and `postgres` services
-- Validate full run with:
+Run full stack locally with:
 
 ```bash
 docker compose up --build
@@ -309,20 +333,5 @@ Live:
 - Open PR from feature -> develop, then develop -> main
 - Protect `main` and require at least one approval
 
-## Known Gaps to Close Before Final Submission
-
-1. Add app `Dockerfile` and full compose app+db setup (if missing in target branch).
-2. Configure `RENDER_DEPLOY_HOOK_URL` in repository secrets.
-3. Enforce branch protection and PR review policy in GitHub settings.
-4. Add/verify login/logout flow documentation and screenshots for demo.
-5. Add architecture and ER diagrams as image files in `docs/` if your instructor prefers images over Mermaid.
-
-## Demo Checklist (5-minute presentation)
-
-- Project architecture and entity relationships
-- Security roles and restricted endpoints
-- API demo (register, create product, update stock, view logs)
-- Test execution in CI
-- Docker and deployment status
 
 ---
