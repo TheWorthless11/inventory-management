@@ -326,7 +326,7 @@ Live:
 
 - Public URL: https://inventory-management-tbvp.onrender.com
 
-## Git Workflow (Recommended for Requirement)
+## Git Workflow
 
 - Long-lived branches: `main`, `develop`
 - Short-lived branches: `feature/*`
